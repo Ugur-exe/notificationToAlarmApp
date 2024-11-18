@@ -23,7 +23,7 @@ AlarmSettings? _createAlarmSettingsFromRemoteMessage(RemoteMessage message) {
     var alarmDateTime = DateTime.now().add(const Duration(seconds: 5));
 
     return AlarmSettings(
-      id: message.messageId?.hashCode ?? DateTime.now().millisecondsSinceEpoch,
+      id: 55,
       dateTime: alarmDateTime,
       assetAudioPath: 'assets/alarm_sound.mp3',
       loopAudio: true,
@@ -34,6 +34,7 @@ AlarmSettings? _createAlarmSettingsFromRemoteMessage(RemoteMessage message) {
         title: title,
         body: body,
         stopButton: 'Stop the alarm',
+        icon: 'ic_launcher',
       ),
     );
   } catch (e) {
@@ -66,6 +67,15 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       final alarms = Alarm.getAlarms();
       log('Current alarms count: ${alarms.length}');
       Future.delayed(const Duration(milliseconds: 100));
+      if (Platform.isAndroid) {
+        try {
+          const platform = MethodChannel('flutter.android/alarm');
+          await platform.invokeMethod('wakeUpScreen');
+          log('Başarılı channel');
+        } catch (e) {
+          log('Başarısız Channel : $e');
+        }
+      }
       await navigatorKey.currentState?.push(
         MaterialPageRoute(
             builder: (_) => AlarmNotificationScreen(
@@ -156,6 +166,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: navigatorKey,
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Alarm App',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
